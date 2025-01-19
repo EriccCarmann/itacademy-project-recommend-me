@@ -1,2 +1,3 @@
 # itacademy-project-recommend-me
  
+This web service provides users with information about movies, shows, games and books with scpecific genres (horror, fantasy, sci-fi, etc.), and rates them using other people's reviews that are collected from the Internet. Registered users may leave comments on the ratings and submit a form to include certain sites that can also provide reviews. Users can input keywords, such as name of an actor/actress, a studio, a country, etc. to make the result more specific. This result will be available to that user only unless they decide to save it and share with other users.
