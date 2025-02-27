@@ -1,0 +1,6 @@
+@RecommendMe.WebApi_HostAddress = http://localhost:5088
+
+GET {{RecommendMe.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

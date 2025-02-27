@@ -1,0 +1,27 @@
+﻿@model ReccomendMe.Data.Entities.Article[]
+
+@{
+    ViewBag.Title = "Article";
+    Layout = "_Layout";
+}
+
+<h2>Articles</h2>
+
+@foreach (var article in Model)
+{
+    <div>
+        <div>
+            <h3>@article.Title</h3>
+            <h5>@article.CreationDate</h5>
+        </div>
+        <div>
+            <p>@article.Description</p>
+            <a asp-action="Details" asp-route-id="@article.Id">Read</a>
+        </div>
+        <div>
+            <h6>@article.Source</h6>
+            @*<span>Rate: @article.Rate</span>*@
+        </div>
+    </div>
+    <hr/>
+}
