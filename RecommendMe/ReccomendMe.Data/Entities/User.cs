@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace ReccomendMe.Data.Entities
+namespace RecommendMe.Data.Entities
 {
     public class User : IdentityUser {}
 }

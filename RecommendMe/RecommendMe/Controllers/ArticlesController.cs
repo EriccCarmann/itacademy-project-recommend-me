@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ReccomendMe.Data.Entities;
+using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
 
 namespace RecommendMe.MVC.Controllers
@@ -18,7 +18,7 @@ namespace RecommendMe.MVC.Controllers
         {
             const double baseMinRate = 3;
 
-            var articles = (await _articleService.GetAllPositiveAsync(baseMinRate)) //will be reaplaced with mapper
+            var articles = (await _articleService.GetAllPositiveAsync(baseMinRate)) //will be replaced with mapper
                 .Select(article => new Article()
                 {
                     Id = article.Id,
@@ -35,12 +35,24 @@ namespace RecommendMe.MVC.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(Guid id) 
+        public async Task<IActionResult> Details(int id) 
         {
             var article = await _articleService.GetByIdAsync(id);
+
             if (article != null)
             {
-                return View(article);
+                var model = new Article()
+                {
+                    Id = article.Id,
+                    Title = article.Title,
+                    Description = article.Description,
+                    Source = article.Source,
+                    CreationDate = article.CreationDate,
+                    Content = article.Content,
+                    PositivityRate = article.PositivityRate
+                };
+
+                return View(model);
             }
             else
             {
@@ -50,15 +62,56 @@ namespace RecommendMe.MVC.Controllers
 
         //bad practices
         [HttpGet]
-        public async Task<IActionResult> AddArticle(AddArticleModel? model)
+        public async Task<IActionResult> Add([FromForm]AddArticleModel? model)
         {
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AddArticleProcessing(AddArticleModel model)
+        [HttpGet]
+        public async Task<IActionResult> Edit(Article model)
         {
-            return View();
+
+            //var article = await _articleService.GetByIdAsync(id);
+
+            //if (article != null)
+            //{
+            //    var model = new Article()
+            //    {
+            //        Id = article.Id,
+            //        Title = article.Title,
+            //        Description = article.Description,
+            //        Source = article.Source,
+            //        CreationDate = article.CreationDate,
+            //        Content = article.Content,
+            //        PositivityRate = article.PositivityRate
+            //    };
+            //    return View();
+            //}
+            //else
+            //{
+            //    return NotFound();
+            //}
+            var data = model;
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddProcessing(AddArticleModel model)
+        {
+            var article = new Article()
+            {
+                Title = model.Title,
+                Description = model.Description,
+                PositivityRate = model.PositivityRate,
+                CreationDate = DateTime.Now,
+                Content = "",
+                SourceId = 1,
+                Url = ""
+            };
+
+            await _articleService.AddArticleAsync(article);
+
+            return RedirectToAction("Index");
         }
     }
 }

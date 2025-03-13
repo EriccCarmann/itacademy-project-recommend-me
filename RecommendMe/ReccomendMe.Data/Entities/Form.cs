@@ -1,4 +1,4 @@
-﻿namespace ReccomendMe.Data.Entities
+﻿namespace RecommendMe.Data.Entities
 {
     public class Form
     {

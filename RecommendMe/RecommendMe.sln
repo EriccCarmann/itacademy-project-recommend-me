@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecommendMe.MVC", "Recommen
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecommendMe.WebApi", "RecommendMe.WebApi\RecommendMe.WebApi.csproj", "{48C54EA5-52DC-43A0-8402-3C479D85DC90}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReccomendMe.Data", "ReccomendMe.Data\ReccomendMe.Data.csproj", "{C55D2175-9B23-4F48-AF8F-0718971233CB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecommendMe.Data", "ReccomendMe.Data\RecommendMe.Data.csproj", "{C55D2175-9B23-4F48-AF8F-0718971233CB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecommendMe.Services", "RecommendMe.Services\RecommendMe.Services.csproj", "{06F27CDF-99B1-4F83-9CCB-795427A3D20D}"
 EndProject

@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ReccomendMe.Data\ReccomendMe.Data.csproj" />
+    <ProjectReference Include="..\ReccomendMe.Data\RecommendMe.Data.csproj" />
     <ProjectReference Include="..\RecommendMe.Services\RecommendMe.Services.csproj" />
   </ItemGroup>
 

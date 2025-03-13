@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ReccomendMe.Data;
-using ReccomendMe.Data.Entities;
+using RecommendMe.Data;
+using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
 
 namespace RecommendMe.Services.Implementation
@@ -23,10 +23,16 @@ namespace RecommendMe.Services.Implementation
                 .ToArrayAsync();
         }
 
-        public async Task<Article?> GetByIdAsync(Guid id)
+        public async Task<Article?> GetByIdAsync(int id)
         {
             return await _dbContext.Articles
                 .FirstOrDefaultAsync(article => article.Id.Equals(id));
+        }
+
+        public async Task AddArticleAsync(Article article)
+        {
+            await _dbContext.Articles.AddAsync(article);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

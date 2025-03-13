@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using ReccomendMe.Data.Entities;
 using RecommendMe.Data.Entities;
 
-namespace ReccomendMe.Data
+namespace RecommendMe.Data
 {
     public class RecommendMeDBContext : IdentityDbContext<User>
     {

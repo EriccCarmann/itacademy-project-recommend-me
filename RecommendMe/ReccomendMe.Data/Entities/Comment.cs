@@ -1,4 +1,4 @@
-﻿using ReccomendMe.Data.Entities;
+﻿using RecommendMe.Data.Entities;
 
 namespace RecommendMe.Data.Entities
 {

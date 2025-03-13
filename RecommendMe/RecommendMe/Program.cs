@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Logging;
-using ReccomendMe.Data;
+using RecommendMe.Data;
 using RecommendMe.Services.Abstract;
 using RecommendMe.Services.Implementation;
 
@@ -34,6 +33,7 @@ namespace RecommendMe
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
