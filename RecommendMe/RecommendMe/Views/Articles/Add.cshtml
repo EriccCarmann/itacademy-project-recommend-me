@@ -1,0 +1,24 @@
+﻿@model RecommendMe.Data.Entities.AddArticleModel
+
+@{
+    ViewBag.Title = "Article";
+    Layout = "_Layout";
+}
+
+<h2>Add Article</h2>
+
+<form asp-action="AddProcessing" asp-controller="Articles" method="post">
+    <div>
+        <label asp-for="Title">Title: </label>
+        <input asp-for ="Title" type="text" required/>
+    </div>
+    <div>
+        <label asp-for="Description">Description: </label>
+        <textarea asp-for="Description" required></textarea>
+    </div>
+    <div>
+        <label asp-for="PositivityRate">Rate: </label>
+        <input asp-for="PositivityRate" type="number" />
+    </div>
+    <input type="submit" text="Submit"/>
+</form>
