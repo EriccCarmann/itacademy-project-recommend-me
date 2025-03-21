@@ -14,18 +14,23 @@ namespace RecommendMe.Services.Implementation
             _dbContext = dbContext;
         }
 
-        public async Task<Article[]> GetAllPositiveAsync(double minRate)
+        public async Task<Article[]> GetAllPositiveAsync(double minRate, int pageSize, int pageNumber)
         {
             return await _dbContext.Articles
                 .Where(article => article.PositivityRate >= minRate)
                 .Include(article => article.Source)
                 .AsNoTracking()
+                .OrderByDescending(article => article.PositivityRate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToArrayAsync();
         }
 
         public async Task<Article?> GetByIdAsync(int id)
         {
             return await _dbContext.Articles
+                .AsNoTracking()
+                .Include(article => article.Source)
                 .FirstOrDefaultAsync(article => article.Id.Equals(id));
         }
 
@@ -33,6 +38,19 @@ namespace RecommendMe.Services.Implementation
         {
             await _dbContext.Articles.AddAsync(article);
             await _dbContext.SaveChangesAsync();
+        }
+
+
+
+
+
+
+
+        public async Task<int?> CountAsync(double minRate)
+        {
+            return await _dbContext.Articles
+                .AsNoTracking()
+                .CountAsync();
         }
     }
 }

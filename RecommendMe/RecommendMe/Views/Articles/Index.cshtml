@@ -1,4 +1,4 @@
-﻿@model ReccomendMe.Data.Entities.Article[]
+﻿@model RecommendMe.MVC.Models.ArticleCollectionModel
 
 @{
     ViewBag.Title = "Article";
@@ -7,7 +7,12 @@
 
 <h2>Articles</h2>
 
-@foreach (var article in Model)
+@* <pagination page-info="@Model.PageInfo" page-action="Index"></pagination> *@
+<pagination page-action="Index" page-info="@Model.PageInfo"></pagination>
+
+<a asp-action="Add">Add</a>
+
+@foreach (var article in Model.Articles)
 {
     <div>
         <div>
@@ -19,8 +24,8 @@
             <a asp-action="Details" asp-route-id="@article.Id">Read</a>
         </div>
         <div>
-            <h6>@article.Source</h6>
-            @*<span>Rate: @article.Rate</span>*@
+            <h6>@article.Source.SourceName</h6>
+            <span>Rate: @article.PositivityRate</span>
         </div>
     </div>
     <hr/>

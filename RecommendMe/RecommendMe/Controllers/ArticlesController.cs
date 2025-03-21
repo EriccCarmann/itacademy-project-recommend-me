@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RecommendMe.Data.Entities;
+using RecommendMe.MVC.Models;
 using RecommendMe.Services.Abstract;
 
 namespace RecommendMe.MVC.Controllers
@@ -14,11 +15,22 @@ namespace RecommendMe.MVC.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(PaginationModel paginationModel)
         {
+            if (!ModelState.IsValid)
+            {
+                var list = new List<String>();
+                foreach (var item in ModelState)
+                {
+                    list.Add(item.Key);
+                }
+                return BadRequest(list);
+            }
+
             const double baseMinRate = 3;
 
-            var articles = (await _articleService.GetAllPositiveAsync(baseMinRate)) //will be replaced with mapper
+            //will be replaced with mapper
+            var articles = (await _articleService.GetAllPositiveAsync(baseMinRate, paginationModel.PageSize, paginationModel.PageNumber))
                 .Select(article => new Article()
                 {
                     Id = article.Id,
@@ -31,7 +43,20 @@ namespace RecommendMe.MVC.Controllers
                 })
                 .ToArray();
 
-            return View(articles);
+            var totalArticlesCount = await _articleService.CountAsync(baseMinRate);
+
+            var pageInfo = new PageInfo()
+            {
+                PageNumber = paginationModel.PageNumber,
+                PageSize = paginationModel.PageSize,
+                TotalItems = totalArticlesCount ?? 0
+            };
+
+            return View(new ArticleCollectionModel()
+            {
+                Articles = articles,
+                PageInfo = pageInfo
+            });
         }
 
         [HttpGet]
