@@ -5,11 +5,11 @@ using RecommendMe.Services.Abstract;
 
 namespace RecommendMe.MVC.Controllers
 {
-    public class ArticlesController : Controller
+    public class ArticleController : Controller
     {
         private readonly IArticleService _articleService;
 
-        public ArticlesController(IArticleService articleService)
+        public ArticleController(IArticleService articleService)
         {
             _articleService = articleService;
         }
