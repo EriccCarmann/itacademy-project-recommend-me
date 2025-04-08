@@ -2,11 +2,14 @@
 
 namespace RecommendMe.WebApi.Controllers
 {
-    public class CommentController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CommentController : ControllerBase
     {
-        public IActionResult Index()
+        [HttpGet("index")]
+        public async Task<IActionResult> Index()
         {
-            return View();
+            return Ok();
         }
     }
 }
