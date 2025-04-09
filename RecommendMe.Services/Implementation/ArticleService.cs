@@ -18,13 +18,24 @@ namespace RecommendMe.Services.Implementation
             _logger = logger;
         }
 
+        //public async Task DeleteAll()
+        //{
+        //    var a = await _dbContext.Articles.ToArrayAsync();
+        //    foreach (var article in a)
+        //    {
+        //        _dbContext.Articles.Remove(article);
+        //    }
+
+        //    _dbContext.SaveChanges();
+        //}
+
         public async Task<Article[]> GetAllPositiveAsync(double minRate, int pageSize, int pageNumber, CancellationToken token = default)
         {
             return await _dbContext.Articles
-                .Where(article => article.PositivityRate >= minRate)
-                .Include(article => article.Source)
+                //.Where(article => article.PositivityRate >= minRate)
+                //.Include(article => article.Source)
                 .AsNoTracking()
-                .OrderByDescending(article => article.PositivityRate)
+                //.OrderByDescending(article => article.PositivityRate)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToArrayAsync(token);
@@ -78,10 +89,10 @@ namespace RecommendMe.Services.Implementation
 
         public async Task UpdateContentByWebScrapping(Guid[] ids, CancellationToken token = default)
         {
-            foreach (Guid id in ids)
+            foreach (var id in ids)
             {
                 var article = await _dbContext.Articles.FirstOrDefaultAsync(article => article.Id.Equals(id), token);
-                if (article != null || string.IsNullOrWhiteSpace(article.Url)) 
+                if (article == null || string.IsNullOrWhiteSpace(article.Url)) 
                 {
                     _logger.LogWarning($"Article with {id} not found or has no url", id);
                     continue;
@@ -96,7 +107,16 @@ namespace RecommendMe.Services.Implementation
                     continue;
                 }
 
-                //var articleMode
+                var articleNode = doc.DocumentNode.SelectSingleNode("//div[@class='news-text']");
+
+                if (articleNode == null)
+                {
+                    _logger.LogWarning($"Failed to find correct article content from url {article.Url}");
+                    continue;
+                }
+
+                article.Content = articleNode.InnerHtml.Trim();
+                await _dbContext.SaveChangesAsync(token);
             }
         }
     }

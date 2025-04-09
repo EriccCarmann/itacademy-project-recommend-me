@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RecommendMe.Data;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
 
@@ -29,13 +31,12 @@ namespace RecommendMe.MVC.Controllers
         [HttpGet("AggregateProcessing")]
         public async Task<IActionResult> AggregateProcessing(CancellationToken token = default)
         {
-            //1. Get all sources
+            //await _articleService.DeleteAll();
             var sources = await _sourceService.GetSourceWithRss();
             var newArticles = new List<Article>();
 
             foreach (var source in sources)
             {
-                //2. Get all articles from each source
                 var existedArticlesUrl = await _articleService.GetUniqueArticlesUrls(token);
                 var articles = await _rssService.GetRssDataAsync(source, token);
                 var newArticlesData = articles.Where(article => !existedArticlesUrl
@@ -47,12 +48,10 @@ namespace RecommendMe.MVC.Controllers
 
             var articleIdsToWebScrapping = await _articleService.GetArticleIdsWithNoTextAsync(token);
             await _articleService.UpdateContentByWebScrapping(articleIdsToWebScrapping, token);
-            
-            //3. Aggreпate all articles
-            //4. Rate each article
-            //5. Save to DB
 
-            return Ok(newArticles);
+            var res = await _articleService.GetAllPositiveAsync(1, 15, 1, token);
+
+            return Ok(res);
         }
 
         //[HttpGet]
