@@ -46,6 +46,8 @@ namespace RecommendMe.MVC.Controllers
 
             await _articleService.AddArticlesAsync(newArticles, token);
 
+            await _articleService.UpdateTextForArticlesByWebScrappingAsync(token);
+
             var articleIdsToWebScrapping = await _articleService.GetArticleIdsWithNoTextAsync(token);
             await _articleService.UpdateContentByWebScrapping(articleIdsToWebScrapping, token);
 

@@ -12,7 +12,7 @@ namespace RecommendMe.Services.Abstract
 
         public Task<string[]> GetUniqueArticlesUrls(CancellationToken token = default);
         public Task AddArticlesAsync(IEnumerable<Article> newUniqueArticles, CancellationToken token = default);
-        public Task<Guid[]> GetArticleIdsWithNoTextAsync(CancellationToken token = default);
         public Task UpdateContentByWebScrapping(Guid[] ids, CancellationToken token = default);
+        public Task UpdateTextForArticlesByWebScrappingAsync(CancellationToken token = default);
     }
 }

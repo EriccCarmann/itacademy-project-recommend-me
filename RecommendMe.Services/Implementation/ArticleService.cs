@@ -1,7 +1,10 @@
 ﻿using HtmlAgilityPack;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RecommendMe.Data;
+using RecommendMe.Data.CQS.Commands;
+using RecommendMe.Data.CQS.Queries;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
 
@@ -10,12 +13,14 @@ namespace RecommendMe.Services.Implementation
     public class ArticleService : IArticleService
     {
         private readonly RecommendMeDBContext _dbContext;
+        private readonly IMediator _mediator;
         private readonly ILogger<ArticleService> _logger;
 
-        public ArticleService(RecommendMeDBContext dbContext, ILogger<ArticleService> logger)
+        public ArticleService(RecommendMeDBContext dbContext, ILogger<ArticleService> logger, IMediator mediator)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _mediator = mediator;
         }
 
         //public async Task DeleteAll()
@@ -73,26 +78,25 @@ namespace RecommendMe.Services.Implementation
 
         public async Task AddArticlesAsync(IEnumerable<Article> newUniqueArticles, CancellationToken token = default)
         {
-            await _dbContext.AddRangeAsync(newUniqueArticles, token);
-            await _dbContext.SaveChangesAsync(token);
-        }
-
-        public async Task<Guid[]> GetArticleIdsWithNoTextAsync(CancellationToken token = default)
-        {
-            return await _dbContext.Articles
-                .AsNoTracking()
-                .Where(article => !string.IsNullOrWhiteSpace(article.Url) 
-                                  && string.IsNullOrWhiteSpace(article.Content))
-                .Select(article => article.Id)
-                .ToArrayAsync(token);
+            await _mediator.Send(new AddArticlesCommand() { Articles = newUniqueArticles }, token);
         }
 
         public async Task UpdateContentByWebScrapping(Guid[] ids, CancellationToken token = default)
         {
+ 
+        }
+
+        public async Task UpdateTextForArticlesByWebScrappingAsync(CancellationToken token = default)
+        {
+            var ids = await _mediator.Send(new GetIdsForArticlesWithNoTextQuery(), token);
+
+            var dictionary = new Dictionary<Guid, string>();
             foreach (var id in ids)
             {
-                var article = await _dbContext.Articles.FirstOrDefaultAsync(article => article.Id.Equals(id), token);
-                if (article == null || string.IsNullOrWhiteSpace(article.Url)) 
+                var article = await _dbContext.Articles
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(article => article.Id.Equals(id), token);
+                if (article == null || string.IsNullOrWhiteSpace(article.Url))
                 {
                     _logger.LogWarning($"Article with {id} not found or has no url", id);
                     continue;
@@ -114,10 +118,13 @@ namespace RecommendMe.Services.Implementation
                     _logger.LogWarning($"Failed to find correct article content from url {article.Url}");
                     continue;
                 }
-
-                article.Content = articleNode.InnerHtml.Trim();
-                await _dbContext.SaveChangesAsync(token);
+                dictionary.Add(id, articleNode.InnerHtml.Trim());
             }
+
+            await _mediator.Send(new UpdateTextForArticlesCommand()
+            {
+                Data = dictionary
+            }, token);
         }
     }
 }
