@@ -48,8 +48,8 @@ namespace RecommendMe.MVC.Controllers
 
             await _articleService.UpdateTextForArticlesByWebScrappingAsync(token);
 
-            var articleIdsToWebScrapping = await _articleService.GetArticleIdsWithNoTextAsync(token);
-            await _articleService.UpdateContentByWebScrapping(articleIdsToWebScrapping, token);
+            //var articleIdsToWebScrapping = await _articleService.GetArticleIdsWithNoTextAsync(token);
+            //await _articleService.UpdateContentByWebScrapping(articleIdsToWebScrapping, token);
 
             var res = await _articleService.GetAllPositiveAsync(1, 15, 1, token);
 

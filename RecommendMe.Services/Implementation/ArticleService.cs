@@ -36,14 +36,19 @@ namespace RecommendMe.Services.Implementation
 
         public async Task<Article[]> GetAllPositiveAsync(double minRate, int pageSize, int pageNumber, CancellationToken token = default)
         {
-            return await _dbContext.Articles
-                //.Where(article => article.PositivityRate >= minRate)
-                //.Include(article => article.Source)
-                .AsNoTracking()
-                //.OrderByDescending(article => article.PositivityRate)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToArrayAsync(token);
+            try
+            {
+                return await _mediator.Send(new GetPositiveArticlesWithPaginationQuery()
+                {
+                    Page = pageNumber,
+                    PageSize = pageSize,
+                    PositivityRate = minRate
+                }, token);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occured while fetching articles");
+            }
         }
 
         public async Task<Article?> GetByIdAsync(int id, CancellationToken token = default)
