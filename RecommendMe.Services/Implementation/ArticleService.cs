@@ -48,6 +48,7 @@ namespace RecommendMe.Services.Implementation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occured while fetching articles");
+                throw;
             }
         }
 
@@ -84,11 +85,6 @@ namespace RecommendMe.Services.Implementation
         public async Task AddArticlesAsync(IEnumerable<Article> newUniqueArticles, CancellationToken token = default)
         {
             await _mediator.Send(new AddArticlesCommand() { Articles = newUniqueArticles }, token);
-        }
-
-        public async Task UpdateContentByWebScrapping(Guid[] ids, CancellationToken token = default)
-        {
- 
         }
 
         public async Task UpdateTextForArticlesByWebScrappingAsync(CancellationToken token = default)

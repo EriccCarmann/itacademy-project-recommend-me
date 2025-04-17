@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using RecommendMe.Data;
+using RecommendMe.Data.CQS.Commands;
 using RecommendMe.Services.Abstract;
 using RecommendMe.Services.Implementation;
 using Serilog;
+using System.Text.Json.Serialization;
 
 namespace RecommendMe.WebApi
 {
@@ -16,7 +18,11 @@ namespace RecommendMe.WebApi
                 .ReadFrom.Configuration(builder.Configuration)
                 .CreateLogger();
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                });
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -28,6 +34,9 @@ namespace RecommendMe.WebApi
             builder.Services.AddScoped<ISourceService, SourceService>();
             builder.Services.AddScoped<IRssService, RssService>();
             builder.Services.AddScoped<IWebScrappingService, WebScrappingService>();
+
+            builder.Services.AddMediatR(sc => 
+                sc.RegisterServicesFromAssembly(typeof(AddArticlesCommand).Assembly));
 
             builder.Services.AddSerilog();
 
