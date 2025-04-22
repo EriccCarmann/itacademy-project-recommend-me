@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RecommendMe.Data;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
+using RecommendMe.WebApi.Mappers;
 
 namespace RecommendMe.MVC.Controllers
 {
@@ -13,12 +14,18 @@ namespace RecommendMe.MVC.Controllers
         private readonly IArticleService _articleService;
         private readonly ISourceService _sourceService;
         private readonly IRssService _rssService;
+        private readonly ILogger<ArticleController> _logger;
+        private readonly ArticleMapper _articleMapper;
 
-        public ArticleController(IArticleService articleService, ISourceService sourceService, IRssService rssService)
+        public ArticleController(IArticleService articleService, 
+                                 ISourceService sourceService, 
+                                 IRssService rssService,
+                                 ArticleMapper articleMapper)
         {
             _articleService = articleService;
             _sourceService = sourceService;
             _rssService = rssService;
+            _articleMapper = articleMapper;
         }
 
         [HttpGet]
@@ -53,80 +60,58 @@ namespace RecommendMe.MVC.Controllers
             return Ok(res);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Index(CancellationToken token = default)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var list = new List<String>();
+                    foreach (var item in ModelState)
+                    {
+                        list.Add(item.Key);
+                    }
+                    return BadRequest(list);
+                }
+
+                const double baseMinRate = 3;
+
+                var articles = (await _articleService.GetAllPositiveAsync(baseMinRate, 15, 1, token))
+                    .Select(article => _articleMapper.ArticleDtoToArticle(article))
+                    .ToArray();
+
+                var totalArticlesCount = await _articleService.CountAsync(baseMinRate);
+
+                // (int)Math.Ceiling((decimal)TotalItems / PageSize);
+
+                return Ok(articles);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                throw;
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details([FromRoute] int id)
+        {
+            var article = await _articleService.GetByIdAsync(id);
+
+            if (article != null)
+            {
+                var model = _articleMapper.ArticleDtoToArticle(article);
+
+                return Ok(model);
+            }
+
+            return NotFound();
+        }
+
+        //bad practices
         //[HttpGet]
-        //public async Task<IActionResult> Index(PaginationModel paginationModel)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        var list = new List<String>();
-        //        foreach (var item in ModelState)
-        //        {
-        //            list.Add(item.Key);
-        //        }
-        //        return BadRequest(list);
-        //    }
-
-        //    const double baseMinRate = 3;
-
-        //    //will be replaced with mapper
-        //    var articles = (await _articleService.GetAllPositiveAsync(baseMinRate, paginationModel.PageSize, paginationModel.PageNumber))
-        //        .Select(article => new Article()
-        //        {
-        //            Id = article.Id,
-        //            Title = article.Title,
-        //            Description = article.Description,
-        //            Source = article.Source,
-        //            CreationDate = article.CreationDate,
-        //            Content = article.Content,
-        //            PositivityRate = article.PositivityRate
-        //        })
-        //        .ToArray();
-
-        //    var totalArticlesCount = await _articleService.CountAsync(baseMinRate);
-
-        //    var pageInfo = new PageInfo()
-        //    {
-        //        PageNumber = paginationModel.PageNumber,
-        //        PageSize = paginationModel.PageSize,
-        //        TotalItems = totalArticlesCount ?? 0
-        //    };
-
-        //    return View(new ArticleCollectionModel()
-        //    {
-        //        Articles = articles,
-        //        PageInfo = pageInfo
-        //    });
-        //}
-
-        //[HttpGet]
-        //public async Task<IActionResult> Details(int id) 
-        //{
-        //    var article = await _articleService.GetByIdAsync(id);
-
-        //    if (article != null)
-        //    {
-        //        var model = new Article()
-        //        {
-        //            Id = article.Id,
-        //            Title = article.Title,
-        //            Description = article.Description,
-        //            Source = article.Source,
-        //            CreationDate = article.CreationDate,
-        //            Content = article.Content,
-        //            PositivityRate = article.PositivityRate
-        //        };
-
-        //        return View(model);
-        //    }
-        //    else
-        //    {
-        //        return NotFound();
-        //    }
-        //}
-
-        ////bad practices
-        //[HttpGet]
-        //public async Task<IActionResult> Add([FromForm]AddArticleModel? model)
+        //public async Task<IActionResult> Add([FromForm] AddArticleModel? model)
         //{
         //    return View();
         //}
