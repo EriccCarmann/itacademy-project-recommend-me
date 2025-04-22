@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using RecommendMe.Core.DTOs;
 using RecommendMe.Data;
 using RecommendMe.Data.CQS.Commands;
 using RecommendMe.Data.CQS.Queries;
@@ -34,6 +35,12 @@ namespace RecommendMe.Services.Implementation
         //    _dbContext.SaveChanges();
         //}
 
+        public async Task AddArticleAsync(ArticleDto article, CancellationToken token = default)
+        {
+            await _dbContext.Articles.AddAsync(article, token);
+            await _dbContext.SaveChangesAsync(token);
+        }
+
         public async Task<Article[]> GetAllPositiveAsync(double minRate, int pageSize, int pageNumber, CancellationToken token = default)
         {
             try
@@ -58,12 +65,6 @@ namespace RecommendMe.Services.Implementation
                 .AsNoTracking()
                 .Include(article => article.Source)
                 .FirstOrDefaultAsync(article => article.Id.Equals(id), token);
-        }
-
-        public async Task AddArticleAsync(Article article, CancellationToken token = default)
-        {
-            await _dbContext.Articles.AddAsync(article);
-            await _dbContext.SaveChangesAsync(token);
         }
 
         public async Task<int?> CountAsync(double minRate, CancellationToken token = default)

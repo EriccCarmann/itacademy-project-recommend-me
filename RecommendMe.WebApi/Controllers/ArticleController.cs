@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RecommendMe.Core.DTOs;
 using RecommendMe.Data;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
@@ -26,6 +27,26 @@ namespace RecommendMe.MVC.Controllers
             _sourceService = sourceService;
             _rssService = rssService;
             _articleMapper = articleMapper;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddProcessing(Article model)
+        {
+            var dto = _articleMapper.MapArticleModelToArticleDto(model);
+            var article = new Article()
+            {
+                Title = model.Title,
+                Description = model.Description,
+                PositivityRate = model.PositivityRate,
+                CreationDate = DateTime.Now,
+                Content = "",
+                SourceId = 1,
+                Url = ""
+            };
+
+            await _articleService.AddArticleAsync(article);
+
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
@@ -142,25 +163,6 @@ namespace RecommendMe.MVC.Controllers
         //    //}
         //    var data = model;
         //    return Ok();
-        //}
-
-        //[HttpPost]
-        //public async Task<IActionResult> AddProcessing(AddArticleModel model)
-        //{
-        //    var article = new Article()
-        //    {
-        //        Title = model.Title,
-        //        Description = model.Description,
-        //        PositivityRate = model.PositivityRate,
-        //        CreationDate = DateTime.Now,
-        //        Content = "",
-        //        SourceId = 1,
-        //        Url = ""
-        //    };
-
-        //    await _articleService.AddArticleAsync(article);
-
-        //    return RedirectToAction("Index");
         //}
     }
 }
