@@ -7,5 +7,6 @@ namespace RecommendMe.WebApi.Mappers
     public partial class ArticleMapper
     {
         public partial ArticleDto ArticleDtoToArticle(Article article);
+        public partial ArticleDto MapArticleModelToArticleDto(Article article);
     }
 }
