@@ -3,6 +3,7 @@ using RecommendMe.Data;
 using RecommendMe.Data.CQS.Commands;
 using RecommendMe.Services.Abstract;
 using RecommendMe.Services.Implementation;
+using RecommendMe.Services.Mappers;
 using Serilog;
 using System.Text.Json.Serialization;
 
@@ -37,6 +38,8 @@ namespace RecommendMe.WebApi
 
             builder.Services.AddMediatR(sc => 
                 sc.RegisterServicesFromAssembly(typeof(AddArticlesCommand).Assembly));
+
+            builder.Services.AddTransient<ArticleMapper>();
 
             builder.Services.AddSerilog();
 

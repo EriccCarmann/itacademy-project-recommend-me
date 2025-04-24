@@ -2,11 +2,13 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using RecommendMe.Core.DTOs;
 using RecommendMe.Data;
 using RecommendMe.Data.CQS.Commands;
 using RecommendMe.Data.CQS.Queries;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
+using RecommendMe.Services.Mappers;
 
 namespace RecommendMe.Services.Implementation
 {
@@ -15,12 +17,14 @@ namespace RecommendMe.Services.Implementation
         private readonly RecommendMeDBContext _dbContext;
         private readonly IMediator _mediator;
         private readonly ILogger<ArticleService> _logger;
+        private readonly ArticleMapper _articleMapper;
 
-        public ArticleService(RecommendMeDBContext dbContext, ILogger<ArticleService> logger, IMediator mediator)
+        public ArticleService(RecommendMeDBContext dbContext, ILogger<ArticleService> logger, IMediator mediator, ArticleMapper articleMapper)
         {
             _dbContext = dbContext;
             _logger = logger;
             _mediator = mediator;
+            _articleMapper = articleMapper;
         }
 
         //public async Task DeleteAll()
@@ -34,16 +38,26 @@ namespace RecommendMe.Services.Implementation
         //    _dbContext.SaveChanges();
         //}
 
-        public async Task<Article[]> GetAllPositiveAsync(double minRate, int pageSize, int pageNumber, CancellationToken token = default)
+        public async Task AddArticleAsync(ArticleDto articleDto, CancellationToken token = default)
+        {
+            var article = _articleMapper.ArticleDtoToArticle(articleDto);
+            //todo add mediator & command
+            await _dbContext.Articles.AddAsync(article, token);
+            await _dbContext.SaveChangesAsync(token);
+        }
+
+        public async Task<ArticleDto[]> GetAllPositiveAsync(double minRate, int pageSize, int pageNumber, CancellationToken token = default)
         {
             try
             {
-                return await _mediator.Send(new GetPositiveArticlesWithPaginationQuery()
+                return (await _mediator.Send(new GetPositiveArticlesWithPaginationQuery()
                 {
                     Page = pageNumber,
                     PageSize = pageSize,
                     PositivityRate = minRate
-                }, token);
+                }, token))
+                .Select(article => _articleMapper.ArticleToArticleDto(article))
+                .ToArray();
             }
             catch (Exception ex)
             {
@@ -58,12 +72,6 @@ namespace RecommendMe.Services.Implementation
                 .AsNoTracking()
                 .Include(article => article.Source)
                 .FirstOrDefaultAsync(article => article.Id.Equals(id), token);
-        }
-
-        public async Task AddArticleAsync(Article article, CancellationToken token = default)
-        {
-            await _dbContext.Articles.AddAsync(article);
-            await _dbContext.SaveChangesAsync(token);
         }
 
         public async Task<int?> CountAsync(double minRate, CancellationToken token = default)

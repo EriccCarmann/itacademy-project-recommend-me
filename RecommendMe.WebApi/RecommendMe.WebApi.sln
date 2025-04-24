@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecommendMe.Services", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecommendMe.Data.CQS", "..\RecommendMe.Data.CQS\RecommendMe.Data.CQS.csproj", "{7191FD66-2BFC-418B-9867-4E8D47E7D793}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecommendMe.Core", "..\RecommendMe.Core\RecommendMe.Core.csproj", "{F5A99E15-79B6-46BD-A114-55AC9F4669C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{7191FD66-2BFC-418B-9867-4E8D47E7D793}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7191FD66-2BFC-418B-9867-4E8D47E7D793}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7191FD66-2BFC-418B-9867-4E8D47E7D793}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5A99E15-79B6-46BD-A114-55AC9F4669C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5A99E15-79B6-46BD-A114-55AC9F4669C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5A99E15-79B6-46BD-A114-55AC9F4669C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5A99E15-79B6-46BD-A114-55AC9F4669C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
