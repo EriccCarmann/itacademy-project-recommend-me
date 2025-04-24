@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecommendMe.Data.CQS", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecommendMe.Core", "..\RecommendMe.Core\RecommendMe.Core.csproj", "{F5A99E15-79B6-46BD-A114-55AC9F4669C5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecommendMe.Services.Tests", "..\RecommendMe.Services.Tests\RecommendMe.Services.Tests.csproj", "{0894E57A-025B-432B-8A41-8A0C2DADDE21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,9 +43,16 @@ Global
 		{F5A99E15-79B6-46BD-A114-55AC9F4669C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5A99E15-79B6-46BD-A114-55AC9F4669C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5A99E15-79B6-46BD-A114-55AC9F4669C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0894E57A-025B-432B-8A41-8A0C2DADDE21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0894E57A-025B-432B-8A41-8A0C2DADDE21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0894E57A-025B-432B-8A41-8A0C2DADDE21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0894E57A-025B-432B-8A41-8A0C2DADDE21}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0894E57A-025B-432B-8A41-8A0C2DADDE21} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {43283E45-FE13-4B3A-92CB-3DEC4C27EDC1}
