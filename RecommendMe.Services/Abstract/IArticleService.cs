@@ -7,7 +7,7 @@ namespace RecommendMe.Services.Abstract
     {
         //public Task DeleteAll();
         public Task AddArticleAsync(ArticleDto article, CancellationToken token = default);
-        public Task<Article[]> GetAllPositiveAsync(double posRate, int pageSize, int pageNumber, CancellationToken token = default);
+        public Task<ArticleDto[]> GetAllPositiveAsync(double posRate, int pageSize, int pageNumber, CancellationToken token = default);
         public Task<Article?> GetByIdAsync(int id, CancellationToken token = default);
         public Task<int?> CountAsync(double minRate, CancellationToken token = default);
 

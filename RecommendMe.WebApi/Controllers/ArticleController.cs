@@ -4,7 +4,7 @@ using RecommendMe.Core.DTOs;
 using RecommendMe.Data;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
-using RecommendMe.WebApi.Mappers;
+using RecommendMe.Services.Mappers;
 
 namespace RecommendMe.MVC.Controllers
 {
@@ -29,31 +29,15 @@ namespace RecommendMe.MVC.Controllers
             _articleMapper = articleMapper;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AddProcessing(Article model)
-        {
-            var dto = _articleMapper.MapArticleModelToArticleDto(model);
-            var article = new Article()
-            {
-                Title = model.Title,
-                Description = model.Description,
-                PositivityRate = model.PositivityRate,
-                CreationDate = DateTime.Now,
-                Content = "",
-                SourceId = 1,
-                Url = ""
-            };
+        //[HttpPost("AddProcessing")]
+        //public async Task<IActionResult> AddProcessing(Article model)
+        //{
+        //    var dto = _articleMapper.MapArticleModelToArticleDto(model);
+   
+        //    await _articleService.AddArticleAsync(dto);
 
-            await _articleService.AddArticleAsync(article);
-
-            return RedirectToAction("Index");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Aggregate()
-        {
-            throw new NotImplementedException();
-        }
+        //    return RedirectToAction("Index");
+        //}
 
         [HttpPost]
         [HttpGet("AggregateProcessing")]
@@ -81,25 +65,25 @@ namespace RecommendMe.MVC.Controllers
             return Ok(res);
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> Index(CancellationToken token = default)
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    var list = new List<String>();
-                    foreach (var item in ModelState)
-                    {
-                        list.Add(item.Key);
-                    }
-                    return BadRequest(list);
-                }
+                //if (!ModelState.IsValid)
+                //{
+                //    var list = new List<String>();
+                //    foreach (var item in ModelState)
+                //    {
+                //        list.Add(item.Key);
+                //    }
+                //    return BadRequest(list);
+                //}
 
                 const double baseMinRate = 3;
 
                 var articles = (await _articleService.GetAllPositiveAsync(baseMinRate, 15, 1, token))
-                    .Select(article => _articleMapper.ArticleDtoToArticle(article))
+                    //.Select(article => _articleMapper.ArticleToArticleDto(article))
                     .ToArray();
 
                 var totalArticlesCount = await _articleService.CountAsync(baseMinRate);
@@ -115,14 +99,14 @@ namespace RecommendMe.MVC.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("Details")]
         public async Task<IActionResult> Details([FromRoute] int id)
         {
             var article = await _articleService.GetByIdAsync(id);
 
             if (article != null)
             {
-                var model = _articleMapper.ArticleDtoToArticle(article);
+                var model = _articleMapper.ArticleToArticleDto(article);
 
                 return Ok(model);
             }

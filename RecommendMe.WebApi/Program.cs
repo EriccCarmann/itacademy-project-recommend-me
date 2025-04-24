@@ -3,7 +3,7 @@ using RecommendMe.Data;
 using RecommendMe.Data.CQS.Commands;
 using RecommendMe.Services.Abstract;
 using RecommendMe.Services.Implementation;
-using RecommendMe.WebApi.Mappers;
+using RecommendMe.Services.Mappers;
 using Serilog;
 using System.Text.Json.Serialization;
 
