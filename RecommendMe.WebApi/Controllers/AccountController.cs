@@ -1,34 +1,51 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RecommendMe.Core.DTOs;
+using RecommendMe.Services.Abstract;
 
 namespace RecommendMe.MVC.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class AccountController : ControllerBase
     {
-        //взаимодействие с профилем loginb logout
+        private readonly IAccountService _accountService;
+
+        public AccountController(IAccountService accountService)
+        {
+            _accountService = accountService;
+        }
 
         //[HttpGet]
         //public IActionResult Login(RegisterModel)
         //{
-        //    return View();
+        //    return Ok();
         //}
 
-        //[HttpPost]
-        //public Task<IActionResult> Login(LoginModel loginModel)
-        //{
-        //    //todo : authentificate user
-        //    return View();
-        //}
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDto loginDto)
+        {
+            //todo : authentificate user
+            var isLoginSucceed = await _accountService.TryToLogin(loginDto);
+
+            if (isLoginSucceed)
+            {
+                //todo: authorize user
+                return Ok();
+            }
+
+            return NotFound();
+        }
 
         //[HttpPost]
-        //public IActionResult Register()
+        //public IActionResult Register(RegisterModel registerModel)
         //{
-        //    return View();
+        //    return Ok();
         //}
 
-        //[HttpPost]
-        //public IActionResult Logout()
-        //{
-        //    return View();
-        //}
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            return Ok();
+        }
     }
 }

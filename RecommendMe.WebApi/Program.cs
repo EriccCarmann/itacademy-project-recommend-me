@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using RecommendMe.Data;
 using RecommendMe.Data.CQS.Commands;
@@ -31,7 +32,10 @@ namespace RecommendMe.WebApi
                options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Services.AddSerilog();
+
             builder.Services.AddScoped<IArticleService, ArticleService>();
+            builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<ISourceService, SourceService>();
             builder.Services.AddScoped<IRssService, RssService>();
             builder.Services.AddScoped<IWebScrappingService, WebScrappingService>();
@@ -40,8 +44,17 @@ namespace RecommendMe.WebApi
                 sc.RegisterServicesFromAssembly(typeof(AddArticlesCommand).Assembly));
 
             builder.Services.AddTransient<ArticleMapper>();
+            builder.Services.AddTransient<LoginMapper>();
 
-            builder.Services.AddSerilog();
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/account/login";
+                    options.AccessDeniedPath = "/account/accessdenied";
+                    options.LoginPath = "/account/logout";
+
+                });
+            builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
