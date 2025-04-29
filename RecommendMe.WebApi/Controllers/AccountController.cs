@@ -36,11 +36,19 @@ namespace RecommendMe.MVC.Controllers
             return NotFound();
         }
 
-        //[HttpPost]
-        //public IActionResult Register(RegisterModel registerModel)
-        //{
-        //    return Ok();
-        //}
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterDto registerDto)
+        {
+            var isLoginSucceed = await _accountService.TryToRegister(registerDto);
+
+            if (isLoginSucceed)
+            {
+                //todo: authorize user
+                return Ok();
+            }
+
+            return NotFound();
+        }
 
         [HttpPost("logout")]
         public IActionResult Logout()
