@@ -6,5 +6,6 @@ namespace RecommendMe.Services.Abstract
     {
         Task<bool> TryToLogin(LoginDto loginDto);
         Task<bool> TryToRegister(RegisterDto registerDro);
+        Task CreateRoles();
     }
 }

@@ -56,5 +56,10 @@ namespace RecommendMe.Services.Implementation
             var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
             return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
         }
+
+        public Task CreateRoles()
+        {
+            return _mediator.Send(new TryToCreateRolesIfNecessaryCommand());
+        }
     }
 }

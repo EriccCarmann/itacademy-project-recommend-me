@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RecommendMe.Core.DTOs;
+using RecommendMe.Data.CQS.Commands;
 using RecommendMe.Services.Abstract;
 
 namespace RecommendMe.MVC.Controllers
@@ -54,6 +55,12 @@ namespace RecommendMe.MVC.Controllers
         public IActionResult Logout()
         {
             return Ok();
+        }
+
+        [HttpPost("createroles")]
+        public Task CreateRoles()
+        {
+            return _accountService.CreateRoles();
         }
     }
 }
