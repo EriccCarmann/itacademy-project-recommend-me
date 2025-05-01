@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using RecommendMe.Core.DTOs;
 using RecommendMe.Data.CQS.Commands;
 using RecommendMe.Services.Abstract;
+using System.Security.Claims;
 
 namespace RecommendMe.MVC.Controllers
 {
@@ -16,21 +19,14 @@ namespace RecommendMe.MVC.Controllers
             _accountService = accountService;
         }
 
-        //[HttpGet]
-        //public IActionResult Login(RegisterModel)
-        //{
-        //    return Ok();
-        //}
-
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto loginDto)
+        public async Task<IActionResult> Login(SignInDto signInDto)
         {
-            //todo : authentificate user
-            var isLoginSucceed = await _accountService.TryToLogin(loginDto);
+            var loginData = await _accountService.TryToLogin(signInDto);
 
-            if (isLoginSucceed)
+            if (loginData != null)
             {
-                //todo: authorize user
+                await SignIn(loginData);
                 return Ok();
             }
 
@@ -40,12 +36,11 @@ namespace RecommendMe.MVC.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto registerDto)
         {
-            var isLoginSucceed = await _accountService.TryToRegister(registerDto);
+            var loginDto = await _accountService.TryToRegister(registerDto);
 
-            if (isLoginSucceed)
+            if (loginDto != null)
             {
-                //todo: authorize user
-                return Ok();
+                await Login(loginDto);
             }
 
             return NotFound();
@@ -62,5 +57,22 @@ namespace RecommendMe.MVC.Controllers
         {
             return _accountService.CreateRoles();
         }
+
+        private async Task SignIn(LoginDto loginData)
+        {
+            var claims = new List<Claim>
+                {
+                    new (ClaimTypes.Email, loginData.Email),
+                    new (ClaimTypes.Role, loginData.Role),
+                    new (ClaimTypes.Name, loginData.Name)
+                };
+
+            var claimsIdentity = new ClaimsIdentity(claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity));
+        }
+
     }
 }

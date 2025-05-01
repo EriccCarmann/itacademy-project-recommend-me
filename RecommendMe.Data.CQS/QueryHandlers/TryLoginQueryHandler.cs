@@ -1,10 +1,11 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using RecommendMe.Data.CQS.Queries;
+using RecommendMe.Data.Entities;
 
 namespace RecommendMe.Data.CQS.QueryHandlers
 {
-    public class TryLoginQueryHandler : IRequestHandler<TryLoginQuery, bool>
+    public class TryLoginQueryHandler : IRequestHandler<TryLoginQuery, User?>
     {
         private readonly RecommendMeDBContext _context;
 
@@ -13,12 +14,17 @@ namespace RecommendMe.Data.CQS.QueryHandlers
             _context = context;
         }
 
-        public async Task<bool> Handle(TryLoginQuery request, CancellationToken cancellationToken)
+        public async Task<User?> Handle(TryLoginQuery request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(user => user.Email.Equals(request.Email), 
-                cancellationToken);
+            var user = await _context.Users
+                .Include(user => user.Role)
+                .AsNoTracking()
+                .SingleOrDefaultAsync(user => user.Email.Equals(request.Email),
+                    cancellationToken);
 
-            return user != null && request.PasswordHash.Equals(user.PasswordHash);
+            return user != null && request.PasswordHash.Equals(user.PasswordHash)
+                ? user 
+                : null;
         }
     }
 }

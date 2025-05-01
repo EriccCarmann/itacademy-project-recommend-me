@@ -46,6 +46,7 @@ namespace RecommendMe.WebApi
             builder.Services.AddTransient<ArticleMapper>();
             builder.Services.AddTransient<LoginMapper>();
             builder.Services.AddTransient<RegistrationMapper>();
+            builder.Services.AddTransient<UserMapper>();
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>

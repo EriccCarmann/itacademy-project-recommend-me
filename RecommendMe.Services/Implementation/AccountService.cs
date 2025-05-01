@@ -3,6 +3,7 @@ using RecommendMe.Core.DTOs;
 using RecommendMe.Data.CQS.Commands;
 using RecommendMe.Data.CQS.Queries;
 using RecommendMe.Services.Abstract;
+using RecommendMe.Services.Mappers;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -11,31 +12,35 @@ namespace RecommendMe.Services.Implementation
     public class AccountService : IAccountService
     {
         private readonly IMediator _mediator;
+        private readonly UserMapper _userMapper;
 
-        public AccountService(IMediator mediator)
+        public AccountService(IMediator mediator, UserMapper userMapper)
         {
             _mediator = mediator;
+            _userMapper = userMapper;
         }
 
-        public async Task<bool> TryToLogin(LoginDto loginDto)
+        public async Task<LoginDto> TryToLogin(SignInDto signInDto)
         {
+            var passwordHash = GetHash(signInDto.PasswordHash);
             var result = await _mediator.Send(new TryLoginQuery()
             {
-                Email = loginDto.Email,
-                PasswordHash = loginDto.PasswordHash
+                Name = signInDto.Name,
+                Email = signInDto.Email,
+                PasswordHash = GetHash(signInDto.PasswordHash)
             });
 
-            return result;
+            return _userMapper.UserToLoginDto(result);
         }
 
-        public async Task<bool> TryToRegister(RegisterDto registerDro)
+        public async Task<SignInDto?> TryToRegister(RegisterDto registerDro)
         {
             if (await _mediator.Send(new CheckUserWithEmailExistsQuery()
             {
                 Email = registerDro.Email
             }))
             {
-                return false;
+                return null;
             }
 
             var passwordHash = GetHash(registerDro.PasswordHash);
@@ -47,7 +52,8 @@ namespace RecommendMe.Services.Implementation
                 PasswordHash = passwordHash
             });
 
-            return true;
+            var userDto = _userMapper.UserToSignInDto(await _mediator.Send(new GetUserByEmailQuery()));
+            return userDto;
         }
 
         public string GetHash(string password)
