@@ -27,7 +27,7 @@ namespace RecommendMe.MVC.Controllers
             if (loginData != null)
             {
                 await SignIn(loginData);
-                return Ok();
+                return Ok(loginData);
             }
 
             return NotFound();

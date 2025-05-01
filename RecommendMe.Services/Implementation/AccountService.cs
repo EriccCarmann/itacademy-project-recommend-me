@@ -23,11 +23,17 @@ namespace RecommendMe.Services.Implementation
         public async Task<LoginDto> TryToLogin(SignInDto signInDto)
         {
             var passwordHash = GetHash(signInDto.PasswordHash);
+
+            var userDto = _userMapper.UserToSignInDto(await _mediator.Send(new GetUserByEmailQuery()
+            {
+                Email = signInDto.Email,
+            }));
+
             var result = await _mediator.Send(new TryLoginQuery()
             {
-                Name = signInDto.Name,
-                Email = signInDto.Email,
-                PasswordHash = GetHash(signInDto.PasswordHash)
+                Name = userDto.Name,
+                Email = userDto.Email,
+                PasswordHash = userDto.PasswordHash
             });
 
             return _userMapper.UserToLoginDto(result);
@@ -52,7 +58,10 @@ namespace RecommendMe.Services.Implementation
                 PasswordHash = passwordHash
             });
 
-            var userDto = _userMapper.UserToSignInDto(await _mediator.Send(new GetUserByEmailQuery()));
+            var userDto = _userMapper.UserToSignInDto(await _mediator.Send(new GetUserByEmailQuery()
+            {
+                Email = registerDro.Email,
+            }));
             return userDto;
         }
 
