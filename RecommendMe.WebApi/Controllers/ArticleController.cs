@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RecommendMe.Core.DTOs;
-using RecommendMe.Data;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
 using RecommendMe.Services.Mappers;
 
 namespace RecommendMe.MVC.Controllers
 {
+    [Authorize(Roles = "User, Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class ArticleController : ControllerBase
@@ -29,18 +29,9 @@ namespace RecommendMe.MVC.Controllers
             _articleMapper = articleMapper;
         }
 
-        //[HttpPost("AddProcessing")]
-        //public async Task<IActionResult> AddProcessing(Article model)
-        //{
-        //    var dto = _articleMapper.MapArticleModelToArticleDto(model);
-   
-        //    await _articleService.AddArticleAsync(dto);
-
-        //    return RedirectToAction("Index");
-        //}
-
         [HttpPost]
         [HttpGet("AggregateProcessing")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AggregateProcessing(CancellationToken token = default)
         {
             //await _articleService.DeleteAll();
@@ -70,16 +61,6 @@ namespace RecommendMe.MVC.Controllers
         {
             try
             {
-                //if (!ModelState.IsValid)
-                //{
-                //    var list = new List<String>();
-                //    foreach (var item in ModelState)
-                //    {
-                //        list.Add(item.Key);
-                //    }
-                //    return BadRequest(list);
-                //}
-
                 const double baseMinRate = 3;
 
                 var articles = (await _articleService.GetAllPositiveAsync(baseMinRate, 15, 1, token))
@@ -113,7 +94,6 @@ namespace RecommendMe.MVC.Controllers
 
             return NotFound();
         }
-
         //bad practices
         //[HttpGet]
         //public async Task<IActionResult> Add([FromForm] AddArticleModel? model)

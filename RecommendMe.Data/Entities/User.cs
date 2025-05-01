@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.Data;
-
-namespace RecommendMe.Data.Entities
+﻿namespace RecommendMe.Data.Entities
 {
     public class User 
     {
