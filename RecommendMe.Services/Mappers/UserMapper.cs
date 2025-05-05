@@ -14,6 +14,7 @@ namespace RecommendMe.Services.Mappers
 
 
         //[MapProperty($"{nameof(Role)}.{nameof(Role.Name)}", "User")]
+        [MapProperty($"{nameof(User.Name)}", nameof(SignInDto.Name))]
         public partial SignInDto UserToSignInDto(User user);
     }
 }

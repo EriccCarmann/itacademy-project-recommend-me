@@ -7,5 +7,6 @@ namespace RecommendMe.Services.Abstract
         Task<LoginDto> TryToLogin(SignInDto signInDto);
         Task<SignInDto> TryToRegister(RegisterDto registerDro);
         Task CreateRoles();
+        string GetHash(string str);
     }
 }

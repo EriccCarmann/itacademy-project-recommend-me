@@ -19,6 +19,12 @@ namespace RecommendMe.MVC.Controllers
             _accountService = accountService;
         }
 
+        [HttpPost("gethash")]
+        public string GetHash(string str)
+        {
+            return _accountService.GetHash(str);
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login(SignInDto signInDto)
         {
