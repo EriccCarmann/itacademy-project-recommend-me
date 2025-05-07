@@ -17,12 +17,19 @@ namespace RecommendMe.Services.Implementation
             _logger = logger;
         }
 
-        public async Task<Source[]> GetSourceWithRss()
+        public async Task<Source> GetByIdAsync(int id, CancellationToken token = default)
+        {
+            return await _dbContext.Sources
+                 .AsNoTracking()
+                 .FirstOrDefaultAsync(source => source.SourceId.Equals(id), token);
+        }
+
+        public async Task<Source[]> GetSourceWithRss(CancellationToken token = default)
         {
             return await _dbContext.Sources
                 .AsNoTracking()
                 .Where(source => !string.IsNullOrWhiteSpace(source.RssUrl))
-                .ToArrayAsync();
+                .ToArrayAsync(token);
         }
     }
 }

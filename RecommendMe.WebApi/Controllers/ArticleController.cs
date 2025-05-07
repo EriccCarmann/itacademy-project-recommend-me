@@ -1,12 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RecommendMe.Core.DTOs;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
 using RecommendMe.Services.Mappers;
 
 namespace RecommendMe.MVC.Controllers
 {
+    /// <summary>
+    /// Controller for articles
+    /// </summary>
     [Authorize(Roles = "User, Admin")]
     [Route("api/[controller]")]
     [ApiController]
@@ -18,8 +22,8 @@ namespace RecommendMe.MVC.Controllers
         private readonly ILogger<ArticleController> _logger;
         private readonly ArticleMapper _articleMapper;
 
-        public ArticleController(IArticleService articleService, 
-                                 ISourceService sourceService, 
+        public ArticleController(IArticleService articleService,
+                                 ISourceService sourceService,
                                  IRssService rssService,
                                  ArticleMapper articleMapper)
         {
@@ -29,35 +33,36 @@ namespace RecommendMe.MVC.Controllers
             _articleMapper = articleMapper;
         }
 
-        [HttpPost]
-        [HttpGet("AggregateProcessing")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AggregateProcessing(CancellationToken token = default)
+        /// <summary>
+        /// Get article by id
+        /// </summary>
+        /// <param name="id">Identifier of article</param>
+        /// <returns>Article by id</returns>
+        [HttpGet("getarticle/{id}")]
+        [ProducesResponseType<ArticleDto>(statusCode: 200)]
+        [ProducesResponseType(statusCode: 404)]
+        [ProducesResponseType(statusCode: 500)]
+        public async Task<IActionResult> GetArticle([FromRoute] int id)
         {
-            //await _articleService.DeleteAll();
-            var sources = await _sourceService.GetSourceWithRss();
-            var newArticles = new List<Article>();
+            var article = await _articleService.GetByIdAsync(id);
 
-            foreach (var source in sources)
+            if (article == null)
             {
-                var existedArticlesUrl = await _articleService.GetUniqueArticlesUrls(token);
-                var articles = await _rssService.GetRssDataAsync(source, token);
-                var newArticlesData = articles.Where(article => !existedArticlesUrl
-                        .Contains(article.Url));
-                newArticles.AddRange(newArticlesData);
+                return NotFound();
             }
 
-            await _articleService.AddArticlesAsync(newArticles, token);
+            var model = _articleMapper.ArticleToArticleDto(article);
 
-            await _articleService.UpdateTextForArticlesByWebScrappingAsync(token);
-
-            var res = await _articleService.GetAllPositiveAsync(1, 15, 1, token);
-
-            return Ok(res);
+            return Ok(model);
         }
 
-        [HttpGet("all")]
-        public async Task<IActionResult> Index(CancellationToken token = default)
+        /// <summary>
+        /// Get all articles
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>All articles</returns>
+        [HttpGet("getarticles")]
+        public async Task<IActionResult> GetArticles(CancellationToken token = default)
         {
             try
             {
@@ -80,20 +85,26 @@ namespace RecommendMe.MVC.Controllers
             }
         }
 
-        [HttpGet("Details")]
-        public async Task<IActionResult> Details([FromRoute] int id)
+        /// <summary>
+        /// Update articles
+        /// </summary>
+        /// <returns></returns>
+        [HttpPatch("updatearticle/{id}")]
+        public async Task<IActionResult> UpdateArticle()
         {
-            var article = await _articleService.GetByIdAsync(id);
-
-            if (article != null)
-            {
-                var model = _articleMapper.ArticleToArticleDto(article);
-
-                return Ok(model);
-            }
-
-            return NotFound();
+            return Ok();
         }
+
+        /// <summary>
+        /// Delete article
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("deletearticle/{id}")]
+        public async Task<IActionResult> DeleteArticle()
+        {
+            return Ok();
+        }
+
         //bad practices
         //[HttpGet]
         //public async Task<IActionResult> Add([FromForm] AddArticleModel? model)
