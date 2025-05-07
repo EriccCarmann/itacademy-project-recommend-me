@@ -40,6 +40,8 @@ namespace RecommendMe.MVC.Controllers
         /// <returns>Article by id</returns>
         [HttpGet("getarticle/{id}")]
         [ProducesResponseType<ArticleDto>(statusCode: 200)]
+        [ProducesResponseType(statusCode: 404)]
+        [ProducesResponseType(statusCode: 500)]
         public async Task<IActionResult> GetArticle([FromRoute] int id)
         {
             var article = await _articleService.GetByIdAsync(id);
@@ -103,38 +105,6 @@ namespace RecommendMe.MVC.Controllers
             return Ok();
         }
 
-        //[HttpPatch]
-        //public async Task<IActionResult> CreateArticle([FromBody] Article article)
-        //{
-        //    await _articleService.CreateArticle(article);
-        //    return CreatedAtAction(nameof(CreateArticle), new { id = article.Id }, article);
-        //}
-
-        [HttpGet("AggregateProcessing")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AggregateProcessing(CancellationToken token = default)
-        {
-            //await _articleService.DeleteAll();
-            var sources = await _sourceService.GetSourceWithRss();
-            var newArticles = new List<Article>();
-
-            foreach (var source in sources)
-            {
-                var existedArticlesUrl = await _articleService.GetUniqueArticlesUrls(token);
-                var articles = await _rssService.GetRssDataAsync(source, token);
-                var newArticlesData = articles.Where(article => !existedArticlesUrl
-                        .Contains(article.Url));
-                newArticles.AddRange(newArticlesData);
-            }
-
-            await _articleService.AddArticlesAsync(newArticles, token);
-
-            await _articleService.UpdateTextForArticlesByWebScrappingAsync(token);
-
-            var res = await _articleService.GetAllPositiveAsync(1, 15, 1, token);
-
-            return Ok(res);
-        }
         //bad practices
         //[HttpGet]
         //public async Task<IActionResult> Add([FromForm] AddArticleModel? model)
