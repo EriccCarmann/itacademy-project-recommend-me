@@ -105,6 +105,7 @@ namespace RecommendMe.Services.Implementation
                 var article = await _dbContext.Articles
                     .AsNoTracking()
                     .FirstOrDefaultAsync(article => article.Id.Equals(id), token);
+
                 if (article == null || string.IsNullOrWhiteSpace(article.Url))
                 {
                     _logger.LogWarning($"Article with {id} not found or has no url", id);

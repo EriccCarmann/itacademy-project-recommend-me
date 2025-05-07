@@ -6,6 +6,7 @@ using RecommendMe.Services.Abstract;
 using RecommendMe.Services.Implementation;
 using RecommendMe.Services.Mappers;
 using Serilog;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 namespace RecommendMe.WebApi
@@ -26,7 +27,11 @@ namespace RecommendMe.WebApi
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 });
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(opt =>
+            {
+                var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                opt.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFileName));
+            });
 
             builder.Services.AddDbContext<RecommendMeDBContext>(
                options =>
