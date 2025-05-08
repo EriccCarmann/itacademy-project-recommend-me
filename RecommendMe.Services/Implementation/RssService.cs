@@ -5,27 +5,37 @@ using RecommendMe.Data.Entities;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Security.Cryptography;
+using RecommendMe.Core.DTOs;
+using RecommendMe.Services.Mappers;
 
 namespace RecommendMe.Services.Implementation
 {
     public class RssService : IRssService
     {
-        public async Task<Article[]> GetRssDataAsync(Source rss, CancellationToken token)
+        private readonly ArticleMapper _articleMapper;
+
+        public RssService(ArticleMapper articleMapper)
         {
-            if (string.IsNullOrEmpty(rss.RssUrl)) 
+            _articleMapper = articleMapper;
+        }
+
+        public async Task<Article[]> GetRssDataAsync(string rssUrl, int rssId, CancellationToken token)
+        {
+            if (string.IsNullOrEmpty(rssUrl)) 
             {
-                throw new ArgumentNullException(nameof(rss.RssUrl));
+                throw new ArgumentNullException(nameof(rssUrl));
             }
 
-            using (var xmlReader = XmlReader.Create(rss.RssUrl))
+            using (var xmlReader = XmlReader.Create(rssUrl))
             {
                 var feed = SyndicationFeed.Load(xmlReader);
 
-                var items = feed.Items
-                    .Select(item => GetArticleFromSyndicationItem(item, rss.SourceId))
+                var articles = feed.Items
+                    .Select(item => GetArticleFromSyndicationItem(item, rssId))
+                    //.Select(article => _articleMapper.ArticleToArticleDto(article))
                     .ToArray();
 
-                return items;
+                return articles;
             }
         }
 

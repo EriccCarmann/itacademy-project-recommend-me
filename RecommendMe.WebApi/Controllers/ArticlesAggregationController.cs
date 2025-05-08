@@ -1,27 +1,25 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
+using RecommendMe.Services.Implementation;
 
 namespace RecommendMe.WebApi.Controllers
 {
     /// <summary>
     /// Provides API endpoints for aggregating and managing articles.
     /// </summary>
-    [Authorize(Roles = "User, Admin")]
+   // [Authorize(Roles = "User, Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class ArticlesAggregationController : Controller
     {
-        private readonly ISourceService _sourceService;
         private readonly IArticleService _articleService;
-        private readonly IRssService _rssService;
 
-        public ArticlesAggregationController(ISourceService sourceService, IArticleService articleService, IRssService rssService)
+        public ArticlesAggregationController(IArticleService articleService)
         {
             _articleService = articleService;
-            _sourceService = sourceService;
-            _rssService = rssService;
         }
 
         /// <summary>
@@ -30,29 +28,18 @@ namespace RecommendMe.WebApi.Controllers
         /// <param name="token"></param>
         /// <returns>articles</returns>
         [HttpPost("aggregate")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> AggregateArticles(CancellationToken token = default)
-        {
-            //await _articleService.DeleteAll();
-            var sources = await _sourceService.GetSourceWithRss();
-            var newArticles = new List<Article>();
+        {            
+            RecurringJob.AddOrUpdate("RssParser",
+                () => _articleService.AggregateArticleInfoFromSourcesByRssAsync(token),
+                "0 * * * *");
 
-            foreach (var source in sources)
-            {
-                var existedArticlesUrl = await _articleService.GetUniqueArticlesUrls(token);
-                var articles = await _rssService.GetRssDataAsync(source, token);
-                var newArticlesData = articles.Where(article => !existedArticlesUrl
-                        .Contains(article.Url));
-                newArticles.AddRange(newArticlesData);
-            }
+            RecurringJob.AddOrUpdate("WebScrapper",
+                () => _articleService.UpdateTextForArticlesByWebScrappingAsync(token),
+                "15 * * * *");
 
-            await _articleService.AddArticlesAsync(newArticles, token);
-
-            await _articleService.UpdateTextForArticlesByWebScrappingAsync(token);
-
-            var res = await _articleService.GetAllPositiveAsync(1, 15, 1, token);
-
-            return Ok(res);
+            return Ok();
         }
     }
 }

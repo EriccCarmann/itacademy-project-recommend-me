@@ -1,9 +1,10 @@
-﻿using RecommendMe.Data.Entities;
+﻿using RecommendMe.Core.DTOs;
+using RecommendMe.Data.Entities;
 
 namespace RecommendMe.Services.Abstract
 {
     public interface IRssService
     {
-        public Task<Article[]> GetRssDataAsync(Source rss, CancellationToken token = default);
+        public Task<Article[]> GetRssDataAsync(string rssUrl, int rssId, CancellationToken token = default);
     }
 }

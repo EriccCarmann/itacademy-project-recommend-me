@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using RecommendMe.Data;
@@ -6,6 +7,7 @@ using RecommendMe.Services.Abstract;
 using RecommendMe.Services.Implementation;
 using RecommendMe.Services.Mappers;
 using Serilog;
+using System.Configuration;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -39,6 +41,14 @@ namespace RecommendMe.WebApi
 
             builder.Services.AddSerilog();
 
+            builder.Services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(builder.Configuration.GetConnectionString("Hangfire")));
+
+            builder.Services.AddHangfireServer();
+
             builder.Services.AddScoped<IArticleService, ArticleService>();
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<ISourceService, SourceService>();
@@ -70,6 +80,8 @@ namespace RecommendMe.WebApi
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseHangfireDashboard();
 
             app.UseHttpsRedirection();
 

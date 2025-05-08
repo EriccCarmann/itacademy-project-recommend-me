@@ -10,6 +10,6 @@
         public double? PositivityRate { get; set; }
         public DateTime CreationDate { get; set; }
         public int SourceId { get; set; }
-        public string Source { get; set; }
+        public string? Source { get; set; }
     }
 }
