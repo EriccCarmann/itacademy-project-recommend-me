@@ -19,7 +19,7 @@ namespace RecommendMe.Services.Implementation
             _articleMapper = articleMapper;
         }
 
-        public async Task<ArticleDto[]> GetRssDataAsync(string rssUrl, int rssId, CancellationToken token)
+        public async Task<Article[]> GetRssDataAsync(string rssUrl, int rssId, CancellationToken token)
         {
             if (string.IsNullOrEmpty(rssUrl)) 
             {
@@ -32,7 +32,7 @@ namespace RecommendMe.Services.Implementation
 
                 var articles = feed.Items
                     .Select(item => GetArticleFromSyndicationItem(item, rssId))
-                    .Select(article => _articleMapper.ArticleToArticleDto(article))
+                    //.Select(article => _articleMapper.ArticleToArticleDto(article))
                     .ToArray();
 
                 return articles;

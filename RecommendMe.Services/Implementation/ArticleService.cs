@@ -47,7 +47,7 @@ namespace RecommendMe.Services.Implementation
         public async Task AggregateArticleInfoFromSourcesByRssAsync(CancellationToken token = default)
         {
             var sources = await _sourceService.GetSourceWithRss();
-            var newArticles = new List<ArticleDto>();
+            var newArticles = new List<Article>();
 
             foreach (var source in sources)
             {
@@ -58,9 +58,9 @@ namespace RecommendMe.Services.Implementation
                 newArticles.AddRange(newArticlesData);
             }
 
-            var newUniqueArticles = newArticles.Select(_articleMapper.ArticleDtoToArticle).ToArray();
+            //var newUniqueArticles = newArticles.Select(_articleMapper.ArticleDtoToArticle).ToArray();
 
-            await AddArticlesAsync(newUniqueArticles, token);
+            await AddArticlesAsync(newArticles, token);
         }
 
         public async Task AddArticleAsync(ArticleDto articleDto, CancellationToken token = default)

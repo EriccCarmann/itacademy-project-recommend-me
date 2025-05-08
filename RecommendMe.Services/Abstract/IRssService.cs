@@ -5,6 +5,6 @@ namespace RecommendMe.Services.Abstract
 {
     public interface IRssService
     {
-        public Task<ArticleDto[]> GetRssDataAsync(string rssUrl, int rssId, CancellationToken token = default);
+        public Task<Article[]> GetRssDataAsync(string rssUrl, int rssId, CancellationToken token = default);
     }
 }

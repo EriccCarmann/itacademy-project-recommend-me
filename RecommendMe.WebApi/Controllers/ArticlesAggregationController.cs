@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
+using RecommendMe.Services.Implementation;
 
 namespace RecommendMe.WebApi.Controllers
 {
@@ -29,11 +30,10 @@ namespace RecommendMe.WebApi.Controllers
         [HttpPost("aggregate")]
         //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> AggregateArticles(CancellationToken token = default)
-        {
-            RecurringJob.AddOrUpdate("RssParser", 
+        {            
+            RecurringJob.AddOrUpdate("RssParser",
                 () => _articleService.AggregateArticleInfoFromSourcesByRssAsync(token),
                 "0 * * * *");
-
 
             RecurringJob.AddOrUpdate("WebScrapper",
                 () => _articleService.UpdateTextForArticlesByWebScrappingAsync(token),
