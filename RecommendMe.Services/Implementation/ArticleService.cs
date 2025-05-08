@@ -18,13 +18,19 @@ namespace RecommendMe.Services.Implementation
         private readonly IMediator _mediator;
         private readonly ILogger<ArticleService> _logger;
         private readonly ArticleMapper _articleMapper;
+        private readonly ISourceService _sourceService;
+        private readonly IRssService _rssService;
 
-        public ArticleService(RecommendMeDBContext dbContext, ILogger<ArticleService> logger, IMediator mediator, ArticleMapper articleMapper)
+        public ArticleService(RecommendMeDBContext dbContext, ILogger<ArticleService> logger, 
+                              IMediator mediator, ArticleMapper articleMapper, 
+                              ISourceService sourceService, IRssService rssService)
         {
             _dbContext = dbContext;
             _logger = logger;
             _mediator = mediator;
             _articleMapper = articleMapper;
+            _sourceService = sourceService;
+            _rssService = rssService;
         }
 
         //public async Task DeleteAll()
@@ -38,10 +44,28 @@ namespace RecommendMe.Services.Implementation
         //    _dbContext.SaveChanges();
         //}
 
+        public async Task AggregateArticleInfoFromSourcesByRssAsync(CancellationToken token = default)
+        {
+            var sources = await _sourceService.GetSourceWithRss();
+            var newArticles = new List<ArticleDto>();
+
+            foreach (var source in sources)
+            {
+                var existedArticlesUrl = await GetUniqueArticlesUrls(token);
+                var articles = await _rssService.GetRssDataAsync(source.RssUrl, source.SourceId, token);
+                var newArticlesData = articles.Where(article => !existedArticlesUrl
+                                              .Contains(article.Url));
+                newArticles.AddRange(newArticlesData);
+            }
+
+            var newUniqueArticles = newArticles.Select(_articleMapper.ArticleDtoToArticle).ToArray();
+
+            await AddArticlesAsync(newUniqueArticles, token);
+        }
+
         public async Task AddArticleAsync(ArticleDto articleDto, CancellationToken token = default)
         {
             var article = _articleMapper.ArticleDtoToArticle(articleDto);
-            //todo add mediator & command
             await _dbContext.Articles.AddAsync(article, token);
             await _dbContext.SaveChangesAsync(token);
         }
