@@ -21,11 +21,13 @@ namespace RecommendMe.Services.Implementation
         private readonly ISourceService _sourceService;
         private readonly IRssService _rssService;
         private readonly IRateService _rateService;
+        private readonly IHtmlRemoverService _htmlRemover;
 
         public ArticleService(RecommendMeDBContext dbContext, ILogger<ArticleService> logger, 
                               IMediator mediator, ArticleMapper articleMapper, 
                               ISourceService sourceService, IRssService rssService,
-                              IRateService rateService)
+                              IRateService rateService,
+                              IHtmlRemoverService htmlRemover)
         {
             _dbContext = dbContext;
             _logger = logger;
@@ -167,7 +169,14 @@ namespace RecommendMe.Services.Implementation
         public async Task RateUnratedArticle(CancellationToken token = default)
         {
             var articlesWithNoRate = await GetArticlesWithoutRateAsync();
-            _rateService.GetRateAsync(articlesWithNoRate);
+
+            foreach (var article in articlesWithNoRate) 
+            {
+                var contentForLemmatozation = article;
+                var rate = await _rateService.GetRateAsync(article.Content, token);
+                await _mediator.Send(new UpdateArticleRateCommand() { });
+            }
+            //_rateService.GetRateAsync(articlesWithNoRate);
         }
 
         public async Task<ArticleDto[]> GetArticlesWithoutRateAsync(CancellationToken token = default)

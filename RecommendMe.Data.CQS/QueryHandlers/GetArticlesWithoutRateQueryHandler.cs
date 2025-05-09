@@ -18,6 +18,7 @@ namespace RecommendMe.Data.CQS.QueryHandlers
         {
             return await _dBContext.Articles
                 .AsNoTracking()
+                .Include(article => article.Source)
                 .Where(article => !article.PositivityRate.HasValue)
                 .ToArrayAsync(cancellationToken);
         }

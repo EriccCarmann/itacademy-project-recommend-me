@@ -1,9 +1,7 @@
 ﻿using System.Net.Http.Json;
-using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RecommendMe.Services.Abstract;
-using static System.Net.WebRequestMethods;
 
 namespace RecommendMe.Services.Implementation
 {
@@ -47,7 +45,7 @@ namespace RecommendMe.Services.Implementation
                 }
             };
 
-            return null;
+            return [];
         }
     }
 }
