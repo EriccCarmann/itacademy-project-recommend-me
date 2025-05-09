@@ -20,10 +20,12 @@ namespace RecommendMe.Services.Implementation
         private readonly ArticleMapper _articleMapper;
         private readonly ISourceService _sourceService;
         private readonly IRssService _rssService;
+        private readonly IRateService _rateService;
 
         public ArticleService(RecommendMeDBContext dbContext, ILogger<ArticleService> logger, 
                               IMediator mediator, ArticleMapper articleMapper, 
-                              ISourceService sourceService, IRssService rssService)
+                              ISourceService sourceService, IRssService rssService,
+                              IRateService rateService)
         {
             _dbContext = dbContext;
             _logger = logger;
@@ -31,6 +33,7 @@ namespace RecommendMe.Services.Implementation
             _articleMapper = articleMapper;
             _sourceService = sourceService;
             _rssService = rssService;
+            _rateService = rateService;
         }
 
         //public async Task DeleteAll()
@@ -159,6 +162,18 @@ namespace RecommendMe.Services.Implementation
             {
                 Data = dictionary
             }, token);
+        }
+
+        public async Task RateUnratedArticle(CancellationToken token = default)
+        {
+            var articlesWithNoRate = await GetArticlesWithoutRateAsync();
+            _rateService.GetRateAsync(articlesWithNoRate);
+        }
+
+        public async Task<ArticleDto[]> GetArticlesWithoutRateAsync(CancellationToken token = default)
+        {
+            var articles = await _mediator.Send(new GetArticlesWithoutRateQuery());
+            return articles.Select(article => _articleMapper.ArticleToArticleDto(article)).ToArray();
         }
     }
 }
