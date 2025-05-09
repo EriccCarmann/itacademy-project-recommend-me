@@ -28,6 +28,7 @@ namespace RecommendMe.Services.Implementation
             using (var httpClient = new HttpClient())
             {
                 var request = new HttpRequestMessage(HttpMethod.Post, url);
+                request.Headers.Add("Accept", "application/json");
             }
 
 
