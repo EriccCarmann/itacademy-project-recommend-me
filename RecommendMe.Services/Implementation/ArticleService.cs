@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using RecommendMe.Core.DTOs;
 using RecommendMe.Data;
 using RecommendMe.Data.CQS.Commands;
@@ -9,6 +10,10 @@ using RecommendMe.Data.CQS.Queries;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
 using RecommendMe.Services.Mappers;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace RecommendMe.Services.Implementation
 {
@@ -36,6 +41,7 @@ namespace RecommendMe.Services.Implementation
             _sourceService = sourceService;
             _rssService = rssService;
             _rateService = rateService;
+            _htmlRemover = htmlRemover;
         }
 
         //public async Task DeleteAll()
@@ -169,10 +175,13 @@ namespace RecommendMe.Services.Implementation
         public async Task RateUnratedArticle(CancellationToken token = default)
         {
             var articlesWithNoRate = await GetArticlesWithoutRateAsync();
+            var dictionary = new ConcurrentDictionary<int, double?>();
 
-            Parallel.ForEachAsync(articlesWithNoRate, token, (ArticleDto, token) =>
+            await Parallel.ForEachAsync(articlesWithNoRate, token, async (dto, token) =>
             {
-
+                var contentForLegitimization = _htmlRemover.RemoveHtmlTags(dto.Content);
+                var rate = await _rateService.GetRateAsync(contentForLegitimization, token);
+                dictionary.TryAdd(dto.SourceId, rate);
             });
 
             foreach (var article in articlesWithNoRate) 
@@ -182,12 +191,23 @@ namespace RecommendMe.Services.Implementation
                 //await _mediator.Send(new UpdateArticleRateCommand() { });
             }
             //_rateService.GetRateAsync(articlesWithNoRate);
+
+          //  await _mediator.Send(new UpdateRateForArticlesCommand()
+          //  {
+          //      Data = dictionary
+          //    .Where(pair => pair.Value.HasValue)
+          //    .Select(pair => new KeyValuePair<Guid, double>(pair.Key, pair.Value.Value)).ToDictionary()
+          //  },
+          //cancellationToken);
         }
 
         public async Task<ArticleDto[]> GetArticlesWithoutRateAsync(CancellationToken token = default)
         {
             var articles = await _mediator.Send(new GetArticlesWithoutRateQuery());
-            return articles.Select(article => _articleMapper.ArticleToArticleDto(article)).ToArray();
+            return articles
+                .Where(article => !article.Content.IsNullOrEmpty())
+                .Select(article => _articleMapper.ArticleToArticleDto(article))
+                .ToArray();
         }
     }
 }

@@ -7,7 +7,14 @@ namespace RecommendMe.Services.Implementation
     {
         public string RemoveHtmlTags(string rawText, CancellationToken token = default)
         {
-            return Regex.Replace(rawText, "<.*?>", string.Empty);
+            try
+            {
+                return Regex.Replace(rawText, "<.*?>", string.Empty);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
     }
 }

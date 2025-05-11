@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using RecommendMe.Services.Abstract;
 
 namespace RecommendMe.Services.Implementation
@@ -52,13 +53,13 @@ namespace RecommendMe.Services.Implementation
                     if (responseForReserve.IsSuccessStatusCode)
                     {
                         var responseString = await responseForReserve.Content.ReadAsStringAsync(token);
-                        var lemmas = JsonConvert.DeserializeObject<TexterraLemmatizationResponse[]>(responseString)?.
-                                FirstOrDefault()?
-                                .Annotations
-                                .Lemma
-                                .Select(lemma => lemma.Value)
-                                .Where(s => !string.IsNullOrWhiteSpace(s))
-                                .ToArray();
+                        var lemmas = JsonConvert.DeserializeObject<TexterraLemmatizationResponse[]>(responseString)?
+                            .FirstOrDefault()?
+                            .Annotations
+                            .Lemma
+                            .Select(lemma => lemma.Value)
+                            .Where(s => !string.IsNullOrWhiteSpace(s))
+                            .ToArray();
                         return lemmas;
                     }
                     else
@@ -82,6 +83,24 @@ namespace RecommendMe.Services.Implementation
                 new {Text = text}
             });
             return request;
+        }
+
+        public class TexterraLemmatizationResponse
+        {
+            public string Text { get; set; }
+            public Annotations Annotations { get; set; }
+        }
+
+        public class Annotations
+        {
+            public Lemma[] Lemma { get; set; }
+        }
+
+        public class Lemma
+        {
+            public int Start { get; set; }
+            public int End { get; set; }
+            public string Value { get; set; }
         }
     }
 }
