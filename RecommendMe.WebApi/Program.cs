@@ -60,6 +60,7 @@ namespace RecommendMe.WebApi
             builder.Services.AddScoped<IWebScrappingService, WebScrappingService>();
             builder.Services.AddScoped<IRateService, RateService>();
             builder.Services.AddScoped<IHtmlRemoverService, HtmlRemoverService>();
+            builder.Services.AddScoped<ITokenService, TokenService>();
 
             builder.Services.AddMediatR(sc => 
                 sc.RegisterServicesFromAssembly(typeof(AddArticlesCommand).Assembly));
