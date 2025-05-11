@@ -27,39 +27,37 @@ namespace RecommendMe.Services.Implementation
 
         private async Task<string[]> GetLemmasAsync(string text, CancellationToken token = default)
         {
-            var url = string.Format(_configuration["Lemmatizer:BaseUrl"], _configuration["Lemmatizer:ApiKey"]);
-
+            // Try the reserved URL first since it's local
+            var reservedUrl = _configuration["Lemmatizer:ReservedUrl"];
             using (var httpClient = new HttpClient())
             {
-                var request = CreateRequest(url, text);
+                var requestForReserved = CreateRequest(reservedUrl, text);
+                var responseForReserve = await httpClient.SendAsync(requestForReserved, token);
 
-                var response = await httpClient.SendAsync(request, token);
-
-                if (response.IsSuccessStatusCode)
+                if (responseForReserve.IsSuccessStatusCode)
                 {
-                    var lemmas = await response.Content.ReadFromJsonAsync<string[]>(token);
+                    var responseString = await responseForReserve.Content.ReadAsStringAsync(token);
+                    var lemmas = JsonConvert.DeserializeObject<TexterraLemmatizationResponse[]>(responseString)?
+                        .FirstOrDefault()?
+                        .Annotations
+                        .Lemma
+                        .Select(lemma => lemma.Value)
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .ToArray();
                     return lemmas;
                 }
                 else
                 {
-                    _logger.LogError($"Failed to get lemmas from {url}. Status code: {response.StatusCode}");
-                    _logger.LogWarning("Trying to get from reserved:");
+                    _logger.LogWarning($"Failed to get lemmas from reserved URL {reservedUrl}. Status code: {responseForReserve.StatusCode}");
+                    _logger.LogWarning("Trying to get from main URL:");
 
-                    var reservedUrl = _configuration["Lemmatizer:ReservedUrl"];
-                    var requestForReserved = CreateRequest(reservedUrl, text);
+                    var url = string.Format(_configuration["Lemmatizer:Url"], _configuration["Lemmatizer:ApiKey"]);
+                    var request = CreateRequest(url, text);
+                    var response = await httpClient.SendAsync(request, token);
 
-                    var responseForReserve = await httpClient.SendAsync(requestForReserved, token);
-
-                    if (responseForReserve.IsSuccessStatusCode)
+                    if (response.IsSuccessStatusCode)
                     {
-                        var responseString = await responseForReserve.Content.ReadAsStringAsync(token);
-                        var lemmas = JsonConvert.DeserializeObject<TexterraLemmatizationResponse[]>(responseString)?
-                            .FirstOrDefault()?
-                            .Annotations
-                            .Lemma
-                            .Select(lemma => lemma.Value)
-                            .Where(s => !string.IsNullOrWhiteSpace(s))
-                            .ToArray();
+                        var lemmas = await response.Content.ReadFromJsonAsync<string[]>(token);
                         return lemmas;
                     }
                     else
@@ -68,9 +66,7 @@ namespace RecommendMe.Services.Implementation
                         throw new Exception($"Failed to get lemmas from {url} and {reservedUrl}");
                     }
                 }
-            };
-
-            return [];
+            }
         }
 
         private HttpRequestMessage CreateRequest(string url, string text)

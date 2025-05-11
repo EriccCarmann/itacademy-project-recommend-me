@@ -180,16 +180,17 @@ namespace RecommendMe.Services.Implementation
             await Parallel.ForEachAsync(articlesWithNoRate, token, async (dto, token) =>
             {
                 var contentForLegitimization = _htmlRemover.RemoveHtmlTags(dto.Content);
+                Console.WriteLine(contentForLegitimization);
                 var rate = await _rateService.GetRateAsync(contentForLegitimization, token);
                 dictionary.TryAdd(dto.SourceId, rate);
             });
-
-            foreach (var article in articlesWithNoRate) 
-            {
-                var contentForLemmatozation = _htmlRemover.RemoveHtmlTags(article.Content);
-                var rate = await _rateService.GetRateAsync(contentForLemmatozation, token);
-                //await _mediator.Send(new UpdateArticleRateCommand() { });
-            }
+            
+            //foreach (var article in articlesWithNoRate) 
+            //{
+            //    var contentForLemmatozation = _htmlRemover.RemoveHtmlTags(article.Content);
+            //    var rate = await _rateService.GetRateAsync(contentForLemmatozation, token);
+            //    //await _mediator.Send(new UpdateArticleRateCommand() { });
+            //}
             //_rateService.GetRateAsync(articlesWithNoRate);
 
           //  await _mediator.Send(new UpdateRateForArticlesCommand()
