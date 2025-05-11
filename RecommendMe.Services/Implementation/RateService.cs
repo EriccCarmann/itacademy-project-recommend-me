@@ -1,4 +1,6 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json.Serialization;
+using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RecommendMe.Services.Abstract;
@@ -28,13 +30,7 @@ namespace RecommendMe.Services.Implementation
 
             using (var httpClient = new HttpClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, url);
-                request.Headers.Add("Accept", "application/json");
-                request.Headers.Add("Contexnt-Type", "application/json");
-                request.Content = JsonContent.Create(new[]
-                {
-                    new {Text = text}
-                });
+                var request = CreateRequest(url, text);
 
                 var response = await httpClient.SendAsync(request, token);
 
@@ -43,9 +39,49 @@ namespace RecommendMe.Services.Implementation
                     var lemmas = await response.Content.ReadFromJsonAsync<string[]>(token);
                     return lemmas;
                 }
+                else
+                {
+                    _logger.LogError($"Failed to get lemmas from {url}. Status code: {response.StatusCode}");
+                    _logger.LogWarning("Trying to get from reserved:");
+
+                    var reservedUrl = _configuration["Lemmatizer:ReservedUrl"];
+                    var requestForReserved = CreateRequest(reservedUrl, text);
+
+                    var responseForReserve = await httpClient.SendAsync(requestForReserved, token);
+
+                    if (responseForReserve.IsSuccessStatusCode)
+                    {
+                        var responseString = await responseForReserve.Content.ReadAsStringAsync(token);
+                        var lemmas = JsonConvert.DeserializeObject<TexterraLemmatizationResponse[]>(responseString)?.
+                                FirstOrDefault()?
+                                .Annotations
+                                .Lemma
+                                .Select(lemma => lemma.Value)
+                                .Where(s => !string.IsNullOrWhiteSpace(s))
+                                .ToArray();
+                        return lemmas;
+                    }
+                    else
+                    {
+                        _logger.LogError($"Failed to get lemmas from {url} and {reservedUrl}");
+                        throw new Exception($"Failed to get lemmas from {url} and {reservedUrl}");
+                    }
+                }
             };
 
             return [];
+        }
+
+        private HttpRequestMessage CreateRequest(string url, string text)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("Accept", "application/json");
+            //request.Headers.Add("Content-Type", "application/json");
+            request.Content = JsonContent.Create(new[]
+            {
+                new {Text = text}
+            });
+            return request;
         }
     }
 }

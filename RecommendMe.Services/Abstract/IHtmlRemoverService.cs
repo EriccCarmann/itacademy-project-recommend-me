@@ -2,6 +2,6 @@
 {
     public interface IHtmlRemoverService
     {
-        public Task<string> RemoveHtmlTagsAsync(string rawText, CancellationToken token = default);
+        public string RemoveHtmlTags(string rawText, CancellationToken token = default);
     }
 }

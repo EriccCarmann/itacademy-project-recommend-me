@@ -170,11 +170,16 @@ namespace RecommendMe.Services.Implementation
         {
             var articlesWithNoRate = await GetArticlesWithoutRateAsync();
 
+            Parallel.ForEachAsync(articlesWithNoRate, token, (ArticleDto, token) =>
+            {
+
+            });
+
             foreach (var article in articlesWithNoRate) 
             {
-                var contentForLemmatozation = article;
-                var rate = await _rateService.GetRateAsync(article.Content, token);
-                await _mediator.Send(new UpdateArticleRateCommand() { });
+                var contentForLemmatozation = _htmlRemover.RemoveHtmlTags(article.Content);
+                var rate = await _rateService.GetRateAsync(contentForLemmatozation, token);
+                //await _mediator.Send(new UpdateArticleRateCommand() { });
             }
             //_rateService.GetRateAsync(articlesWithNoRate);
         }

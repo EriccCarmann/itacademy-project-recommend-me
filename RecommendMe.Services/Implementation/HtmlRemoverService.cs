@@ -5,7 +5,7 @@ namespace RecommendMe.Services.Implementation
 {
     public class HtmlRemoverService : IHtmlRemoverService
     {
-        public async Task<string> RemoveHtmlTagsAsync(string rawText, CancellationToken token = default)
+        public string RemoveHtmlTags(string rawText, CancellationToken token = default)
         {
             return Regex.Replace(rawText, "<.*?>", string.Empty);
         }
