@@ -28,6 +28,10 @@ namespace RecommendMe.WebApi
                 {
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 });
+
+            builder.Configuration.AddJsonFile("AFINN-ru.json");
+            builder.Configuration.AddJsonFile("AFINN-en.json");
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(opt =>
             {
@@ -54,6 +58,8 @@ namespace RecommendMe.WebApi
             builder.Services.AddScoped<ISourceService, SourceService>();
             builder.Services.AddScoped<IRssService, RssService>();
             builder.Services.AddScoped<IWebScrappingService, WebScrappingService>();
+            builder.Services.AddScoped<IRateService, RateService>();
+            builder.Services.AddScoped<IHtmlRemoverService, HtmlRemoverService>();
 
             builder.Services.AddMediatR(sc => 
                 sc.RegisterServicesFromAssembly(typeof(AddArticlesCommand).Assembly));

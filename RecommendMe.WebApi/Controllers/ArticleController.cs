@@ -105,6 +105,17 @@ namespace RecommendMe.MVC.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Rate articles
+        /// </summary>
+        [HttpGet("ratearticle")]
+        public async Task<IActionResult> RateArticles(CancellationToken token = default)
+        { 
+            await _articleService.RateUnratedArticle(token);
+
+            return Ok();
+        }
+
         //bad practices
         //[HttpGet]
         //public async Task<IActionResult> Add([FromForm] AddArticleModel? model)

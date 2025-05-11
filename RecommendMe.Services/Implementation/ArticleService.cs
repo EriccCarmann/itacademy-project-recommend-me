@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using RecommendMe.Core.DTOs;
 using RecommendMe.Data;
 using RecommendMe.Data.CQS.Commands;
@@ -9,6 +10,10 @@ using RecommendMe.Data.CQS.Queries;
 using RecommendMe.Data.Entities;
 using RecommendMe.Services.Abstract;
 using RecommendMe.Services.Mappers;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace RecommendMe.Services.Implementation
 {
@@ -20,10 +25,14 @@ namespace RecommendMe.Services.Implementation
         private readonly ArticleMapper _articleMapper;
         private readonly ISourceService _sourceService;
         private readonly IRssService _rssService;
+        private readonly IRateService _rateService;
+        private readonly IHtmlRemoverService _htmlRemover;
 
         public ArticleService(RecommendMeDBContext dbContext, ILogger<ArticleService> logger, 
                               IMediator mediator, ArticleMapper articleMapper, 
-                              ISourceService sourceService, IRssService rssService)
+                              ISourceService sourceService, IRssService rssService,
+                              IRateService rateService,
+                              IHtmlRemoverService htmlRemover)
         {
             _dbContext = dbContext;
             _logger = logger;
@@ -31,6 +40,8 @@ namespace RecommendMe.Services.Implementation
             _articleMapper = articleMapper;
             _sourceService = sourceService;
             _rssService = rssService;
+            _rateService = rateService;
+            _htmlRemover = htmlRemover;
         }
 
         //public async Task DeleteAll()
@@ -159,6 +170,42 @@ namespace RecommendMe.Services.Implementation
             {
                 Data = dictionary
             }, token);
+        }
+
+        public async Task RateUnratedArticle(CancellationToken token = default)
+        {
+            var articlesWithNoRate = await GetArticlesWithoutRateAsync();
+            var dictionary = new ConcurrentDictionary<Guid, double?>();
+
+            await Parallel.ForEachAsync(articlesWithNoRate, token, async (dto, token) =>
+            {
+                var contentForLegitimization = _htmlRemover.RemoveHtmlTags(dto.Content);
+                Console.WriteLine(contentForLegitimization);
+                var rate = await _rateService.GetRateAsync(contentForLegitimization, token);
+                dictionary.TryAdd(dto.Id, rate);
+            });
+
+            //await _mediator.Send(new UpdateRateForArticlesCommand()
+            //{
+            //    Data = dictionary.ToDictionary()
+            //}, token);
+
+            await _mediator.Send(new UpdateRateForArticlesCommand()
+            {
+                Data = dictionary
+                    .Where(pair => pair.Value.HasValue)
+                    .Select(pair => new KeyValuePair<Guid, double?>(pair.Key, pair.Value))
+                    .ToDictionary()
+            }, token);
+        }
+
+        public async Task<ArticleDto[]> GetArticlesWithoutRateAsync(CancellationToken token = default)
+        {
+            var articles = await _mediator.Send(new GetArticlesWithoutRateQuery());
+            return articles
+                .Where(article => !article.Content.IsNullOrEmpty())
+                .Select(article => _articleMapper.ArticleToArticleDto(article))
+                .ToArray();
         }
     }
 }
