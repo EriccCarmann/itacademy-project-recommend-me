@@ -2,6 +2,6 @@
 {
     public interface IRateService
     {
-        public Task<double> GetRateAsync(string preparedText, CancellationToken token = default);
+        public Task<double?> GetRateAsync(string preparedText, CancellationToken token = default);
     }
 }

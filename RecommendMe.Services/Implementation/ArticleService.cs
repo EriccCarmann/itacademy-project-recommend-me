@@ -175,31 +175,28 @@ namespace RecommendMe.Services.Implementation
         public async Task RateUnratedArticle(CancellationToken token = default)
         {
             var articlesWithNoRate = await GetArticlesWithoutRateAsync();
-            var dictionary = new ConcurrentDictionary<int, double?>();
+            var dictionary = new ConcurrentDictionary<Guid, double?>();
 
             await Parallel.ForEachAsync(articlesWithNoRate, token, async (dto, token) =>
             {
                 var contentForLegitimization = _htmlRemover.RemoveHtmlTags(dto.Content);
                 Console.WriteLine(contentForLegitimization);
                 var rate = await _rateService.GetRateAsync(contentForLegitimization, token);
-                dictionary.TryAdd(dto.SourceId, rate);
+                dictionary.TryAdd(dto.Id, rate);
             });
-            
-            //foreach (var article in articlesWithNoRate) 
-            //{
-            //    var contentForLemmatozation = _htmlRemover.RemoveHtmlTags(article.Content);
-            //    var rate = await _rateService.GetRateAsync(contentForLemmatozation, token);
-            //    //await _mediator.Send(new UpdateArticleRateCommand() { });
-            //}
-            //_rateService.GetRateAsync(articlesWithNoRate);
 
-          //  await _mediator.Send(new UpdateRateForArticlesCommand()
-          //  {
-          //      Data = dictionary
-          //    .Where(pair => pair.Value.HasValue)
-          //    .Select(pair => new KeyValuePair<Guid, double>(pair.Key, pair.Value.Value)).ToDictionary()
-          //  },
-          //cancellationToken);
+            //await _mediator.Send(new UpdateRateForArticlesCommand()
+            //{
+            //    Data = dictionary.ToDictionary()
+            //}, token);
+
+            await _mediator.Send(new UpdateRateForArticlesCommand()
+            {
+                Data = dictionary
+                    .Where(pair => pair.Value.HasValue)
+                    .Select(pair => new KeyValuePair<Guid, double?>(pair.Key, pair.Value))
+                    .ToDictionary()
+            }, token);
         }
 
         public async Task<ArticleDto[]> GetArticlesWithoutRateAsync(CancellationToken token = default)

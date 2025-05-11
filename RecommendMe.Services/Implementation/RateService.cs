@@ -19,10 +19,40 @@ namespace RecommendMe.Services.Implementation
             _logger = logger;
         }
 
-        public async Task<double> GetRateAsync(string preparedText, CancellationToken token = default)
+        public async Task<double?> GetRateAsync(string preparedText, CancellationToken cancellationToken = default)
         {
-            var result = await GetLemmasAsync(preparedText, token);
-            return 0;
+            var keywordsDictionary = _configuration.GetSection("KeywordsDictionaryRu")
+                .GetChildren()
+                .ToDictionary(sect => sect.Key, sect => Convert.ToInt32(sect.Value));
+
+            var lemmas = await GetLemmasAsync(preparedText, cancellationToken);
+
+            double? rate = null;
+
+            foreach (var lemma in lemmas)
+            {
+                if (keywordsDictionary.TryGetValue(lemma, out var rateValue))
+                {
+                    if (rate == null)
+                    {
+                        rate = rateValue;
+                    }
+                    else
+                    {
+                        rate += rateValue;
+                    }
+                }
+            }
+
+            if (rate.HasValue)
+            {
+                var finalRate = rate / lemmas.Length * 100;
+                return finalRate;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private async Task<string[]> GetLemmasAsync(string text, CancellationToken token = default)

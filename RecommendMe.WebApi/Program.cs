@@ -28,6 +28,10 @@ namespace RecommendMe.WebApi
                 {
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 });
+
+            builder.Configuration.AddJsonFile("AFINN-ru.json");
+            builder.Configuration.AddJsonFile("AFINN-en.json");
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(opt =>
             {
